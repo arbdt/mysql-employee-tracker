@@ -117,7 +117,7 @@ function askAddMenu(){
         }
         // if choose "role"
         else if (answer.addMenuChoice === "Role table"){
-
+            askAddRole();
         }
         // if choose "employee"
         else if (answer.addMenChoice === "Employee table"){
@@ -148,6 +148,13 @@ function askViewMenu(){
 function askAddDepartment(){
     inquirer.prompt(addDeptQn).then((answer) => {
         employeeDB.addDepartment(answer.departmentToAdd);
+    });
+}
+
+// add role details
+function askAddRole(){
+    inquirer.prompt(addRoleQns).then((answers) => {
+        employeeDB.addRole(answers.roleTitle, answers.roleSalary, answers.roleDepartment);
     });
 }
 

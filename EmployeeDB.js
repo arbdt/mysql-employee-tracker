@@ -72,22 +72,25 @@ class EmployeeDB {
     // function for adding role
     addRole(roleTitle, roleSalary, roleDepartment){
         let departmentID;
+        let parent = this;
         // get department reference
         this.connection.query(`SELECT id FROM department WHERE ?`, {
             name: roleDepartment
         }, function (error, result){
             if (error) throw error;
-            console.log(result);
+            departmentID = result[0].id;
+            console.log(`department ID is ${departmentID}`);
+
+            parent.connection.query(`INSERT INTO role SET ?`, {
+                title: roleTitle,
+                salary: roleSalary,
+                department_id: departmentID
+            }, function(error, result){
+                if (error) throw error;
+                console.log(`${result.affectedRows} role added.`);
+            });
         });
 
-        this.connection.query(`INSERT INTO role SET ?`, {
-            title: roleTitle,
-            salary: roleSalary,
-            department_id: departmentID
-        }, function(error, result){
-            if (error) throw error;
-            console.log(`${result.affectedRows} department added.`);
-        });
     }
 
     // function for adding employee
