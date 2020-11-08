@@ -1,10 +1,10 @@
-// import modules
+// import modules ----------
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const tables = require("console.table");
 const EmployeeDB = require("./EmployeeDB");
 
-// set up database connection
+// set up database and tables ----------
 let employeeDB = new EmployeeDB();
 
 // create schema
@@ -19,7 +19,7 @@ employeeDB.createRoleTable();
 // create employee table
 employeeDB.createEmployeeTable();
 
-// inquirer questions -------
+// inquirer questions ----------
 // Initial questions menu
 let mainMenuQn = {
     name: "mainMenuChoice",
@@ -96,7 +96,56 @@ let addEmployeeQns = [
     }
 ];
 
-// inquirer prompts
+// inquirer prompts ----------
+// main menu
+function askMainMenu(){
+    inquirer.prompt(mainMenuQn).then((answer) => {
+        // if choose "add"
+        if (answer.mainMenuQn === "Add an entry"){
+            askAddMenu();
+        }
+        // if choose "view"
+        else if (answer.mainMenuQn === "View entries"){
+            askViewMenu();
+        }
+    });
+}
+
+// add menu
+function askAddMenu(){
+    inquirer.prompt(addMenuQn).then((answer) => {
+        // if choose "department"
+        if (answer.addMenuQn === "Department table"){
+            
+        }
+        // if choose "role"
+        else if (answer.addMenuQn === "Role table"){
+
+        }
+        // if choose "employee"
+        else if (answer.addMenuQn === "Employee table"){
+
+        }
+    });
+}
+
+// view menu
+function askViewMenu(){
+    inquirer.prompt(viewMenuQn).then((answer) => {
+        // if choose "department"
+        if (answer.viewMenuQn === "Department table"){
+            
+        }
+        // if choose "role"
+        else if (answer.viewMenuQn === "Role table"){
+
+        }
+        // if choose "employee"
+        else if (answer.viewMenuQn === "Employee table"){
+            
+        }
+    });
+}
 
 // sql queries
 
