@@ -1,4 +1,5 @@
 const mysql = require("mysql");
+const consTable = require("console.table");
 class EmployeeDB {
     // constructor to establish connection and create database
     constructor (){
@@ -100,6 +101,22 @@ class EmployeeDB {
         }, function(error, result){
             if (error) throw error;
             console.log(`${result.affectedRows} department added.`);
+        });
+    }
+
+    getDepartments(){
+        this.connection.query(`SELECT * FROM department`, function(error, result){
+            if (error) throw error;
+            console.log("Displaying DEPARTMENT:")
+            console.table(result);
+        });
+    }
+
+    getRoles(){
+        this.connection.query(`SELECT * FROM role`, function(error, result){
+            if (error) throw error;
+            console.log("Displaying ROLE:")
+            console.table(result);
         });
     }
 

@@ -21,7 +21,7 @@ employeeDB.createEmployeeTable();
 let mainMenuQn = {
     name: "mainMenuChoice",
     type: "list",
-    message: "Welcome to the Employee Database Manager. What would you like to do today?",
+    message: "What would you like to do?",
     choices: ["Add an entry", "View entries", "Update entries"]
 };
 
@@ -131,15 +131,15 @@ function askViewMenu(){
     inquirer.prompt(viewMenuQn).then((answer) => {
         // if choose "department"
         if (answer.viewMenuChoice === "Department table"){
-            
+            showDepartmentTable();
         }
         // if choose "role"
         else if (answer.viewMenuChoice === "Role table"){
-
+            showRoleTable();
         }
         // if choose "employee"
         else if (answer.viewMenuChoice === "Employee table"){
-            
+            showEmployeeTable();
         }
     });
 }
@@ -158,8 +158,28 @@ function askAddRole(){
     });
 }
 
+// add employee details
+
+// view departments table
+function showDepartmentTable(){
+    employeeDB.getDepartments();
+}
+
+// view roles table
+function showRoleTable(){
+    employeeDB.getRoles();
+}
+
+// view employees table
+function showEmployeeTable(){
+
+}
+
 // run program
 function runProgram(){
+    console.log(`------------------------------------------------------
+| Welcome to the Employee Database Management System. |
+------------------------------------------------------`)
     askMainMenu();
 }
 
