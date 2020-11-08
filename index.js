@@ -7,9 +7,6 @@ const EmployeeDB = require("./EmployeeDB");
 // set up database and tables ----------
 let employeeDB = new EmployeeDB();
 
-// create schema
-employeeDB.createEmployeeDB();
-
 // create department table
 employeeDB.createDepartmentTable();
 
@@ -101,11 +98,11 @@ let addEmployeeQns = [
 function askMainMenu(){
     inquirer.prompt(mainMenuQn).then((answer) => {
         // if choose "add"
-        if (answer.mainMenuQn === "Add an entry"){
+        if (answer.mainMenuChoice === "Add an entry"){
             askAddMenu();
         }
         // if choose "view"
-        else if (answer.mainMenuQn === "View entries"){
+        else if (answer.mainMenuChoice === "View entries"){
             askViewMenu();
         }
     });
@@ -115,15 +112,15 @@ function askMainMenu(){
 function askAddMenu(){
     inquirer.prompt(addMenuQn).then((answer) => {
         // if choose "department"
-        if (answer.addMenuQn === "Department table"){
-            
+        if (answer.addMenuChoice === "Department table"){
+            askAddDepartment();
         }
         // if choose "role"
-        else if (answer.addMenuQn === "Role table"){
+        else if (answer.addMenuChoice === "Role table"){
 
         }
         // if choose "employee"
-        else if (answer.addMenuQn === "Employee table"){
+        else if (answer.addMenChoice === "Employee table"){
 
         }
     });
@@ -133,20 +130,30 @@ function askAddMenu(){
 function askViewMenu(){
     inquirer.prompt(viewMenuQn).then((answer) => {
         // if choose "department"
-        if (answer.viewMenuQn === "Department table"){
+        if (answer.viewMenuChoice === "Department table"){
             
         }
         // if choose "role"
-        else if (answer.viewMenuQn === "Role table"){
+        else if (answer.viewMenuChoice === "Role table"){
 
         }
         // if choose "employee"
-        else if (answer.viewMenuQn === "Employee table"){
+        else if (answer.viewMenuChoice === "Employee table"){
             
         }
     });
 }
 
-// sql queries
+// add department details
+function askAddDepartment(){
+    inquirer.prompt(addDeptQn).then((answer) => {
+        employeeDB.addDepartment(answer.departmentToAdd);
+    });
+}
 
 // run program
+function runProgram(){
+    askMainMenu();
+}
+
+runProgram();
