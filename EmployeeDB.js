@@ -1,5 +1,8 @@
+// modules --------
 const mysql = require("mysql");
 const consTable = require("console.table");
+
+// class definition --------
 class EmployeeDB {
     // constructor to establish connection and create database
     constructor (){
@@ -9,27 +12,19 @@ class EmployeeDB {
             user: "root",
             password: "rocket"
         });
-        //this.connection.connect(function(err) {
-            //if (err) throw err;
-            //console.log("Connection established.");
             this.connection.query("CREATE DATABASE IF NOT EXISTS employeeDB", function (err, result) {
                 if (err) throw err;
-                //console.log("Database created");
             });
             this.connection.query("USE employeeDB", function(err, res){
                 if (err) throw err;
-                //console.log("Database connected");
             });
-        //});
-
     }
-
+    // TABLE CREATION ---------
     // create department table
     createDepartmentTable(){
         this.connection.query("CREATE TABLE IF NOT EXISTS department (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, name VARCHAR(30))",
         function(error, result){
             if (error) throw error;
-            //console.log("Department table created.");
         });
     }
 
@@ -42,7 +37,6 @@ class EmployeeDB {
             FOREIGN KEY(department_id) REFERENCES department(id))`,
         function(error, result){
             if (error) throw error;
-            //console.log("Role table created.");
         });
     }
 
@@ -56,13 +50,14 @@ class EmployeeDB {
             FOREIGN KEY(role_id) REFERENCES role(id))`,
         function(error, result){
             if (error) throw error;
-            //console.log("Employee table created.")
         });
     }
 
+    // INSERT FUNCTIONS ----------
     // function for adding department
     addDepartment(deptName){
-        this.connection.query(`INSERT INTO department SET ?`, {
+        this.connection.query(`INSERT INTO department SET ?`,
+        {
             name: deptName
         }, function(error, result){
             if (error) throw error;
@@ -75,14 +70,16 @@ class EmployeeDB {
         let departmentID;
         let parent = this;
         // get department reference
-        this.connection.query(`SELECT id FROM department WHERE ?`, {
+        this.connection.query(`SELECT id FROM department WHERE ?`,
+        {
             name: roleDepartment
         }, function (error, result){
             if (error) throw error;
             departmentID = result[0].id;
             console.log(`department ID is ${departmentID}`);
 
-            parent.connection.query(`INSERT INTO role SET ?`, {
+            parent.connection.query(`INSERT INTO role SET ?`,
+            {
                 title: roleTitle,
                 salary: roleSalary,
                 department_id: departmentID
@@ -96,14 +93,30 @@ class EmployeeDB {
 
     // function for adding employee
     addEmployee(firstNameValue, lastNameValue, roleTitle, managerFullName){
-        this.connection.query(`INSERT INTO employee SET ?`, {
+        let parent = this;
+        // if manager name was provided
+        /*if (managerFullName){
+            let managerSplitName = managerFullName.split(" ");
+            console.log(managerSplitName);
+            this.connection.query("SELECT id FROM employee WHERE ?",
+            {
+                first_name: managerSplitName[0],
+                last_name: managerSplitName[1]
+            }, function(error, result){
+                if (error) throw error;
+                console.log(result[0].id);
+            });
+        }*/
+        /*this.connection.query(`INSERT INTO employee SET ?`, {
             name: deptName
         }, function(error, result){
             if (error) throw error;
             console.log(`${result.affectedRows} department added.`);
-        });
+        });*/
     }
 
+    // SELECT FUNCTIONS --------
+    // function to retrieve content of department table
     getDepartments(){
         this.connection.query(`SELECT * FROM department`, function(error, result){
             if (error) throw error;
@@ -112,10 +125,22 @@ class EmployeeDB {
         });
     }
 
+    // function to retrieve content of role table
     getRoles(){
-        this.connection.query(`SELECT * FROM role`, function(error, result){
+        // join with department so that department name is exposed
+        this.connection.query(`SELECT role.id, role.title, department.name AS department FROM role JOIN department on role.department_id = department.id`, function(error, result){
             if (error) throw error;
-            console.log("Displaying ROLE:")
+            console.log("Displaying Roles:")
+            console.table(result);
+        });
+    }
+
+    // function to retrieve content of employee table
+    getEmployees(){
+        // join with role id so that role title is exposed
+        this.connection.query(`SELECT * FROM employee`, function(error, result){
+            if (error) throw error;
+            console.log("Displaying EMPLOYEE:")
             console.table(result);
         });
     }
