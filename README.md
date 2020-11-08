@@ -1,1 +1,1 @@
-## 12: MySQL Employee Database and Node JS Command LIne Interface
+## 12: MySQL Employee Database and Node JS Command Line Interface
