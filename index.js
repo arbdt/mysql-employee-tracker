@@ -1,7 +1,5 @@
 // import modules ----------
-const mysql = require("mysql");
 const inquirer = require("inquirer");
-const tables = require("console.table");
 const EmployeeDB = require("./EmployeeDB");
 
 // set up database and tables ----------
@@ -120,8 +118,8 @@ function askAddMenu(){
             askAddRole();
         }
         // if choose "employee"
-        else if (answer.addMenChoice === "Employee table"){
-
+        else if (answer.addMenuChoice === "Employee table"){
+            askAddEmployee();
         }
     });
 }
@@ -131,15 +129,15 @@ function askViewMenu(){
     inquirer.prompt(viewMenuQn).then((answer) => {
         // if choose "department"
         if (answer.viewMenuChoice === "Department table"){
-            showDepartmentTable();
+            viewDepartmentTable();
         }
         // if choose "role"
         else if (answer.viewMenuChoice === "Role table"){
-            showRoleTable();
+            viewRoleTable();
         }
         // if choose "employee"
         else if (answer.viewMenuChoice === "Employee table"){
-            showEmployeeTable();
+            viewEmployeeTable();
         }
     });
 }
@@ -159,20 +157,25 @@ function askAddRole(){
 }
 
 // add employee details
+function askAddEmployee(){
+    inquirer.prompt(addEmployeeQns).then((answers) => {
+        employeeDB.addEmployee(answers.employeeFirst, answers.employeeLast, answers.employeeRole, answers.employeeManager);
+    });
+}
 
 // view departments table
-function showDepartmentTable(){
+function viewDepartmentTable(){
     employeeDB.getDepartments();
 }
 
 // view roles table
-function showRoleTable(){
+function viewRoleTable(){
     employeeDB.getRoles();
 }
 
 // view employees table
-function showEmployeeTable(){
-
+function viewEmployeeTable(){
+    employeeDB.getEmployees();
 }
 
 // run program

@@ -107,12 +107,14 @@ class EmployeeDB {
                 console.log(result[0].id);
             });
         }*/
-        /*this.connection.query(`INSERT INTO employee SET ?`, {
-            name: deptName
+        this.connection.query(`INSERT INTO employee SET ?`, {
+            first_name: firstNameValue,
+            last_name: lastNameValue,
+            role_id: 1 
         }, function(error, result){
             if (error) throw error;
-            console.log(`${result.affectedRows} department added.`);
-        });*/
+            console.log(`${result.affectedRows} employee added.`);
+        });
     }
 
     // SELECT FUNCTIONS --------
@@ -128,7 +130,8 @@ class EmployeeDB {
     // function to retrieve content of role table
     getRoles(){
         // join with department so that department name is exposed
-        this.connection.query(`SELECT role.id, role.title, department.name AS department FROM role JOIN department on role.department_id = department.id`, function(error, result){
+        this.connection.query(`SELECT role.id, role.title, department.name AS department FROM role JOIN department ON role.department_id = department.id`,
+         function(error, result){
             if (error) throw error;
             console.log("Displaying Roles:")
             console.table(result);
@@ -138,9 +141,11 @@ class EmployeeDB {
     // function to retrieve content of employee table
     getEmployees(){
         // join with role id so that role title is exposed
-        this.connection.query(`SELECT * FROM employee`, function(error, result){
+        this.connection.query(`SELECT employee.id, CONCAT(employee.first_name, " ", employee.last_name) as employee_name, role.title as role
+         FROM employee JOIN role ON employee.role_id = role.id`,
+          function(error, result){
             if (error) throw error;
-            console.log("Displaying EMPLOYEE:")
+            console.log("Displaying Employees:")
             console.table(result);
         });
     }
