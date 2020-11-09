@@ -67,9 +67,9 @@ class EmployeeDB {
 
     // function for adding role
     addRole(roleTitle, roleSalary, roleDepartment){
-        let departmentID;
         let parent = this;
         // get department reference
+        let departmentID = 0;
         this.connection.query(`SELECT id FROM department WHERE ?`,
         {
             name: roleDepartment
@@ -77,7 +77,7 @@ class EmployeeDB {
             if (error) throw error;
             departmentID = result[0].id;
             console.log(`department ID is ${departmentID}`);
-
+            // insert into role table
             parent.connection.query(`INSERT INTO role SET ?`,
             {
                 title: roleTitle,
@@ -94,26 +94,53 @@ class EmployeeDB {
     // function for adding employee
     addEmployee(firstNameValue, lastNameValue, roleTitle, managerFullName){
         let parent = this;
-        // if manager name was provided
-        /*if (managerFullName){
-            let managerSplitName = managerFullName.split(" ");
-            console.log(managerSplitName);
-            this.connection.query("SELECT id FROM employee WHERE ?",
-            {
-                first_name: managerSplitName[0],
-                last_name: managerSplitName[1]
-            }, function(error, result){
-                if (error) throw error;
-                console.log(result[0].id);
-            });
-        }*/
-        this.connection.query(`INSERT INTO employee SET ?`, {
-            first_name: firstNameValue,
-            last_name: lastNameValue,
-            role_id: 1 
-        }, function(error, result){
+        // connect role title with role id
+        let roleID = 0;
+        this.connection.query(`SELECT id FROM role WHERE ?`,
+        {
+            title: roleTitle
+        }, function (error, result){
             if (error) throw error;
-            console.log(`${result.affectedRows} employee added.`);
+            roleID = result[0].id;
+
+            // insert into employee table
+            //without manager
+            if (!managerFullName || managerFullName == ""){
+                parent.connection.query("INSERT INTO employee SET ?",
+                {
+                    first_name: firstNameValue,
+                    last_name: lastNameValue,
+                    role_id: roleID
+                }, function(error, result){
+                    if (error) throw error;
+                    console.log(`${result.affectedRows} employee added.`);
+                });
+            }
+            // manager name provided
+            else {
+                // get manager id from manager name
+                let managerSplitName = managerFullName.split(" ");
+                console.log(managerSplitName);
+                parent.connection.query("SELECT id FROM employee WHERE ? AND ?",
+                [
+                    {first_name: managerSplitName[0]},
+                    {last_name: managerSplitName[1]}
+                ], function(error, result){
+                    if (error) throw error;
+                    let managerID = result[0].id;
+                    // add new employee
+                    parent.connection.query("INSERT INTO employee SET ?",
+                    {
+                        first_name: firstNameValue,
+                        last_name: lastNameValue,
+                        role_id: roleID,
+                         manager_id: managerID
+                    }, function(error, result){
+                        if (error) throw error;
+                        console.log(`${result.affectedRows} employee added.`);
+                    });
+                });
+            }
         });
     }
 
