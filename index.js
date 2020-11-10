@@ -33,7 +33,7 @@ function(error, result){
 });
 
 // create employee table
-this.connection.query(sql.createEmployeeTable,
+connection.query(sql.createEmployeeTable,
 function(error, result){
     if (error) throw error;
 });
@@ -112,7 +112,9 @@ function askMainMenu(){
         }
         // if choose "quit"
         else if (answer.mainMenuChoice === "Quit"){
-            employeeDB.closeConnection();
+            connection.end(function(error){
+                if (error) throw error;
+            });
         }
     });
 }
@@ -206,20 +208,44 @@ function askAddEmployee(){
 
 // view departments table
 function viewDepartmentTable(){
-    employeeDB.connection.query(employeeDB.getDepartments, function(error, result){
+    connection.query(sql.getDepartments, function(error, result){
         if (error) throw error;
-        console.table(result);
-    })
+        else {
+            // display results
+            console.log("Displaying Departments:")
+            console.table(result);
+        }
+        // return to main menu
+        askMainMenu();
+    });
 }
 
 // view roles table
 function viewRoleTable(){
-    employeeDB.getRoles();
+    connection.query(sql.getRoles, function(error, result){
+        if (error) throw error;
+        else {
+            // display results
+            console.log("Displaying Roles:")
+            console.table(result);
+        }
+        // return to main menu
+        askMainMenu();
+    });
 }
 
 // view employees table
 function viewEmployeeTable(){
-    employeeDB.getEmployees();
+    connection.query(sql.getEmployees, function(error, result){
+            if (error) throw error;
+            else {
+                // display results
+                console.log("Displaying Employees:")
+                console.table(result);
+            }
+            // return to main menu
+            askMainMenu();
+        });
 }
 
 // run program
