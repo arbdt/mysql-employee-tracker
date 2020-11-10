@@ -19,8 +19,9 @@ class customSQL {
         this.getDepartments = `SELECT * FROM department`;
         this.getRoles = `SELECT role.id, role.title, department.name AS department
          FROM role JOIN department ON role.department_id = department.id`;
-        this.getEmployees = `SELECT employee.id, CONCAT(employee.first_name, " ", employee.last_name) as employee_name, role.title as role
-        FROM employee JOIN role ON employee.role_id = role.id`;
+        this.getEmployees = `SELECT employee.id, CONCAT(employee.first_name, " ", employee.last_name) as employee_name, role.title as role,
+         CONCAT(manager.first_name, " ", manager.last_name) as manager_name
+        FROM employee INNER JOIN role ON employee.role_id = role.id LEFT JOIN employee AS manager on employee.manager_id = manager.id`;
 
     }
 }
