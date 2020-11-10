@@ -2,7 +2,7 @@
 const mysql = require("mysql");
 const inquirer = require("inquirer");
 const table = require("console.table");
-const customSQL = require("./customSQL");
+const CustomSQL = require("./customSQL");
 
 // set up database and tables ----------
 let connection = mysql.createConnection({
@@ -18,7 +18,7 @@ connection.query("USE employeeDB", function(error, result){
     if (error) throw error;
 });
 console.log("Database connected");
-let sql = new customSQL();
+let sql = new CustomSQL();
 
 // create department table
 connection.query(sql.createDepartmentTable,
@@ -158,7 +158,12 @@ function askViewMenu(){
 // add department details
 function askAddDepartment(){
     inquirer.prompt(addDeptQn).then((answer) => {
-        employeeDB.addDepartment(answer.departmentToAdd);
+       connection.query(sql.addDepartment,{
+           name: answer.departmentToAdd
+       },function(error, result){
+           if (error) throw error;
+           console.log(`${result.affectedRows} department added.`);
+       });
     });
 }
 
