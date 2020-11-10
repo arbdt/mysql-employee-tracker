@@ -1,18 +1,42 @@
 // import modules ----------
+const mysql = require("mysql");
 const inquirer = require("inquirer");
-const EmployeeDB = require("./EmployeeDB");
+const table = require("console.table");
+const customSQL = require("./customSQL");
 
 // set up database and tables ----------
-let employeeDB = new EmployeeDB();
+let connection = mysql.createConnection({
+    host: "localhost",
+    port: 3306,
+    user: "root",
+    password: "rocket"
+});
+connection.query("CREATE DATABASE IF NOT EXISTS employeeDB", function (error, result) {
+    if (error) throw error;
+});
+connection.query("USE employeeDB", function(error, result){
+    if (error) throw error;
+});
+console.log("Database connected");
+let sql = new customSQL();
 
 // create department table
-employeeDB.createDepartmentTable();
+connection.query(sql.createDepartmentTable,
+        function(error, result){
+            if (error) throw error;
+        });
 
 // create role table
-employeeDB.createRoleTable();
+connection.query(sql.createRoleTable,
+function(error, result){
+    if (error) throw error;
+});
 
 // create employee table
-employeeDB.createEmployeeTable();
+this.connection.query(sql.createEmployeeTable,
+function(error, result){
+    if (error) throw error;
+});
 
 // inquirer questions ----------
 // Initial questions menu
@@ -20,7 +44,7 @@ let mainMenuQn = {
     name: "mainMenuChoice",
     type: "list",
     message: "What would you like to do?",
-    choices: ["Add an entry", "View entries", "Update entries"]
+    choices: ["Add an entry", "View entries", "Update entries", "Quit"]
 };
 
 // add entry submenu
@@ -48,24 +72,7 @@ let addDeptQn = {
     message: "Enter the name of the department to be added:"
 }
 
-// add role questions
-let addRoleQns = [
-    {
-        name: "roleTitle",
-        type: "input",
-        message: "Enter the title of the role to be added:"
-    },
-    {
-        name: "roleSalary",
-        type: "input",
-        message: "Enter the salary for this role in decimal format (0.00):"
-    },
-    {
-        name: "roleDepartment",
-        type: "input",
-        message: "Enter the name of the department associated with this role:"
-    }
-];
+
 
 // add employee questions
 let addEmployeeQns = [
@@ -102,6 +109,10 @@ function askMainMenu(){
         // if choose "view"
         else if (answer.mainMenuChoice === "View entries"){
             askViewMenu();
+        }
+        // if choose "quit"
+        else if (answer.mainMenuChoice === "Quit"){
+            employeeDB.closeConnection();
         }
     });
 }
@@ -151,9 +162,39 @@ function askAddDepartment(){
 
 // add role details
 function askAddRole(){
+    // get existing departments
+    let departmentContent = employeeDB.getDepartments();
+
+    // add role questions
+    let addRoleQns = [
+        {
+            name: "roleTitle",
+            type: "input",
+            message: "Enter the title of the role to be added:"
+        },
+        {
+            name: "roleSalary",
+            type: "input",
+            message: "Enter the salary for this role in decimal format (0.00):"
+        },
+        {
+            name: "roleDepartment",
+            type: "list",
+            message: "Choose the department associated with this role:",
+            choices: function(){
+                let departmentNames = [];
+                for (let d = 0; d < departmentContent.length; d++){
+                    departmentNames.push(departmentContent[d].name);
+                }
+                return departmentNames;
+            }
+        }
+    ];
     inquirer.prompt(addRoleQns).then((answers) => {
         employeeDB.addRole(answers.roleTitle, answers.roleSalary, answers.roleDepartment);
     });
+
+    //askMainMenu();
 }
 
 // add employee details
@@ -165,7 +206,10 @@ function askAddEmployee(){
 
 // view departments table
 function viewDepartmentTable(){
-    employeeDB.getDepartments();
+    employeeDB.connection.query(employeeDB.getDepartments, function(error, result){
+        if (error) throw error;
+        console.table(result);
+    })
 }
 
 // view roles table
@@ -180,6 +224,7 @@ function viewEmployeeTable(){
 
 // run program
 function runProgram(){
+
     console.log(`------------------------------------------------------
 | Welcome to the Employee Database Management System. |
 ------------------------------------------------------`)
