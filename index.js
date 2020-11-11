@@ -44,62 +44,40 @@ let mainMenuQn = {
     name: "mainMenuChoice",
     type: "list",
     message: "What would you like to do?",
-    choices: ["Add an entry", "View entries", "Update entries", "Quit"]
+    choices: ["View entries", "Add an entry", "Update an entry", "Quit"]
 };
 
 // add entry submenu
 let addMenuQn = {
     name: "addMenuChoice",
     type: "list",
-    message: "Which table would you like to add to?",
-    choices: ["Department table", "Role table", "Employee table"]
+    message: "What kind of entry would you like to add?",
+    choices: ["Department", "Role", "Employee"]
 };
 
 // view entry submenu
 let viewMenuQn = {
     name: "viewMenuChoice",
     type: "list",
-    message: "Which table would you like to view?",
-    choices: ["Department table", "Role table", "Employee table"]
+    message: "Which dataset would you like to view?",
+    choices: ["Departments", "Roles", "Employees"]
 };
 
 // update employee role questions
 
-// add employee questions
-let addEmployeeQns = [
-    {
-        name: "employeeFirst",
-        type: "input",
-        message: "Enter the first name of the employee to be added:"
-    },
-    {
-        name: "employeeLast",
-        type: "input",
-        message: "Enter the last name of the employee to be added:"
-    },
-    {
-        name: "employeeRole",
-        type: "input",
-        message: "Enter the title of the employee's role:"
-    },
-    {
-        name: "employeeManager",
-        type: "input",
-        message: "If the employee has a manager, enter the manager's first and last names:"
-    }
-];
+
 
 // inquirer prompts ----------
 // main menu
 function askMainMenu(){
     inquirer.prompt(mainMenuQn).then((answer) => {
         // if choose "add"
-        if (answer.mainMenuChoice === "Add an entry"){
-            askAddMenu();
+        if (answer.mainMenuChoice === "View entries"){
+            askViewMenu();
         }
         // if choose "view"
-        else if (answer.mainMenuChoice === "View entries"){
-            askViewMenu();
+        else if (answer.mainMenuChoice === "Add an entry"){
+            askAddMenu();
         }
         // if choose "quit"
         else if (answer.mainMenuChoice === "Quit"){
@@ -114,15 +92,15 @@ function askMainMenu(){
 function askAddMenu(){
     inquirer.prompt(addMenuQn).then((answer) => {
         // if choose "department"
-        if (answer.addMenuChoice === "Department table"){
+        if (answer.addMenuChoice === "Department"){
             askAddDepartment();
         }
         // if choose "role"
-        else if (answer.addMenuChoice === "Role table"){
+        else if (answer.addMenuChoice === "Role"){
             askAddRole();
         }
         // if choose "employee"
-        else if (answer.addMenuChoice === "Employee table"){
+        else if (answer.addMenuChoice === "Employee"){
             askAddEmployee();
         }
     });
@@ -132,15 +110,15 @@ function askAddMenu(){
 function askViewMenu(){
     inquirer.prompt(viewMenuQn).then((answer) => {
         // if choose "department"
-        if (answer.viewMenuChoice === "Department table"){
+        if (answer.viewMenuChoice === "Departments"){
             viewDepartmentTable();
         }
         // if choose "role"
-        else if (answer.viewMenuChoice === "Role table"){
+        else if (answer.viewMenuChoice === "Roles"){
             viewRoleTable();
         }
         // if choose "employee"
-        else if (answer.viewMenuChoice === "Employee table"){
+        else if (answer.viewMenuChoice === "Employees"){
             viewEmployeeTable();
         }
     });
@@ -208,7 +186,7 @@ function askAddRole(){
             // get department id from chosen department name
             let deptID;
             for (let d = 0; d < departmentContent.length; d++){
-                if(departmentContent[d].name == answers.roleDepartment){
+                if(departmentContent[d].name === answers.roleDepartment){
                     deptID = departmentContent[d].id;
                 }
             }
@@ -230,7 +208,92 @@ function askAddRole(){
 
 // add employee details
 function askAddEmployee(){
+    // get existing roles
+    connection.query(sql.getRoles, function(error, result){
+        if (error) throw error;
+        let roleContent = result; // store role table
 
+
+        // get existing managers (ie existing employees)
+        connection.query(sql.getEmployees, function(error, result){
+            let employeeContent = result; // store employee table
+
+
+            // feed into question bank
+            // questions for add-employee prompt
+            let addEmployeeQns = [
+                {
+                    name: "employeeFirst",
+                    type: "input",
+                    message: "Enter the first name of the employee to be added:"
+                },
+                {
+                    name: "employeeLast",
+                    type: "input",
+                    message: "Enter the last name of the employee to be added:"
+                },
+                {
+                    name: "employeeRole",
+                    type: "list",
+                    message: "Choose the employee's role:",
+                    choices: function(){
+                        let roleTitles = [];
+                        for (let r = 0; r < roleContent.length; r++){
+                            roleTitles.push(roleContent[r].title);
+                        }
+                        return roleTitles;
+                    }
+                },
+                {
+                    name: "employeeManager",
+                    type: "list",
+                    message: "If the employee has a manager, choose that person, otherwise select \"N\/A\":",
+                    choices: function(){
+                        let managerNames = ["N/A"];
+                        for (let m = 0; m < employeeContent.length; m++){
+                            managerNames.push(employeeContent[m].employee_name);
+                        }
+                        return managerNames;
+                    }
+                }
+            ];
+
+            // run prompt
+            inquirer.prompt(addEmployeeQns).then((answers) => {
+                // match chosen role title with role_id
+                let roleID;
+                for (let r = 0; r < roleContent.length; r++){
+                    if(answers.employeeRole === roleContent[r].title){
+                        roleID = roleContent[r].id;
+                    }
+                }
+
+                // extract manager name and convert to manager_id (if was selected)
+                let managerID;
+                if (answers.employeeManager != "N/A"){
+                    for (let m = 0; m < employeeContent.length; m++){
+                        if (answers.manager_name === employeeContent[m].employee_name){
+                            managerID = employeeContent[m].id;
+                        }
+                    }
+                }
+
+                // add employee to employee table
+                connection.query(sql.addEmployee, {
+                    first_name: answers.employeeFirst,
+                    last_name: answers.employeeLast,
+                    role_id: roleID,
+                    manager_id: managerID
+                }, function (error, result){
+                    if (error) throw (error);
+                    console.log(`${result.affectedRows} employee added.`)
+
+                    //return to main menu
+                    askMainMenu();
+                });
+            })
+        });
+    });
 }
 
 // view departments table
