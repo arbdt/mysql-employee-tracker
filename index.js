@@ -65,15 +65,6 @@ let viewMenuQn = {
 
 // update employee role questions
 
-// add department questions
-let addDeptQn = {
-    name: "departmentToAdd",
-    type: "input",
-    message: "Enter the name of the department to be added:"
-}
-
-
-
 // add employee questions
 let addEmployeeQns = [
     {
@@ -157,58 +148,89 @@ function askViewMenu(){
 
 // add department details
 function askAddDepartment(){
+    // questions for add to department
+    let addDeptQn = {
+        name: "departmentToAdd",
+        type: "input",
+        message: "Enter the name of the department to be added:"
+    }
+
+    // ask add department prompt
     inquirer.prompt(addDeptQn).then((answer) => {
-       connection.query(sql.addDepartment,{
-           name: answer.departmentToAdd
-       },function(error, result){
-           if (error) throw error;
-           console.log(`${result.affectedRows} department added.`);
-       });
+        // run query
+        connection.query(sql.addDepartment,{
+            name: answer.departmentToAdd
+        },function(error, result){
+            if (error) throw error;
+            console.log(`${result.affectedRows} department added.`);
+
+            // display main menu
+            askMainMenu();
+        });
     });
 }
 
 // add role details
 function askAddRole(){
     // get existing departments
-    let departmentContent = employeeDB.getDepartments();
-
-    // add role questions
-    let addRoleQns = [
-        {
-            name: "roleTitle",
-            type: "input",
-            message: "Enter the title of the role to be added:"
-        },
-        {
-            name: "roleSalary",
-            type: "input",
-            message: "Enter the salary for this role in decimal format (0.00):"
-        },
-        {
-            name: "roleDepartment",
-            type: "list",
-            message: "Choose the department associated with this role:",
-            choices: function(){
-                let departmentNames = [];
-                for (let d = 0; d < departmentContent.length; d++){
-                    departmentNames.push(departmentContent[d].name);
+    connection.query(sql.getDepartments, function(error, result){
+        if (error) throw error;
+        let departmentContent = result;
+        
+        // questions for add-role prompt
+        let addRoleQns = [
+            {
+                name: "roleTitle",
+                type: "input",
+                message: "Enter the title of the role to be added:"
+            },
+            {
+                name: "roleSalary",
+                type: "input",
+                message: "Enter the salary for this role in decimal format (0.00):"
+            },
+            {
+                name: "roleDepartment",
+                type: "list",
+                message: "Choose the department associated with this role:",
+                choices: function(){
+                    let departmentNames = [];
+                    for (let d = 0; d < departmentContent.length; d++){
+                        departmentNames.push(departmentContent[d].name);
+                    }
+                    return departmentNames;
                 }
-                return departmentNames;
             }
-        }
-    ];
-    inquirer.prompt(addRoleQns).then((answers) => {
-        employeeDB.addRole(answers.roleTitle, answers.roleSalary, answers.roleDepartment);
-    });
+        ];
 
-    //askMainMenu();
+        // ask add role prompt
+        inquirer.prompt(addRoleQns).then((answers) => {
+            // get department id from chosen department name
+            let deptID;
+            for (let d = 0; d < departmentContent.length; d++){
+                if(departmentContent[d].name == answers.roleDepartment){
+                    deptID = departmentContent[d].id;
+                }
+            }
+            // run query to add to role table
+            connection.query(sql.addRole,{
+                title: answers.roleTitle,
+                salary: answers.roleSalary,
+                department_id: deptID
+            }, function(error, result){
+                if (error) throw error;
+                console.log(`${result.affectedRows} role added.`);
+
+                // return to main menu
+                askMainMenu();
+            });
+        });
+    });
 }
 
 // add employee details
 function askAddEmployee(){
-    inquirer.prompt(addEmployeeQns).then((answers) => {
-        employeeDB.addEmployee(answers.employeeFirst, answers.employeeLast, answers.employeeRole, answers.employeeManager);
-    });
+
 }
 
 // view departments table
