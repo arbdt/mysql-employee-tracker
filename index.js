@@ -63,10 +63,6 @@ let viewMenuQn = {
     choices: ["Departments", "Roles", "Employees"]
 };
 
-// update employee role questions
-
-
-
 // inquirer prompts ----------
 // main menu
 function askMainMenu(){
@@ -78,6 +74,10 @@ function askMainMenu(){
         // if choose "view"
         else if (answer.mainMenuChoice === "Add an entry"){
             askAddMenu();
+        }
+        // if choose "update"
+        else if (answer.mainMenuChoice === "Update an entry"){
+            askUpdateEmployee();
         }
         // if choose "quit"
         else if (answer.mainMenuChoice === "Quit"){
@@ -225,12 +225,12 @@ function askAddEmployee(){
                 {
                     name: "employeeFirst",
                     type: "input",
-                    message: "Enter the first name of the employee to be added:"
+                    message: "Enter the first name of the employee:"
                 },
                 {
                     name: "employeeLast",
                     type: "input",
-                    message: "Enter the last name of the employee to be added:"
+                    message: "Enter the last name of the employee:"
                 },
                 {
                     name: "employeeRole",
@@ -269,10 +269,10 @@ function askAddEmployee(){
                 }
 
                 // extract manager name and convert to manager_id (if was selected)
-                let managerID;
+                let managerID = null;
                 if (answers.employeeManager != "N/A"){
                     for (let m = 0; m < employeeContent.length; m++){
-                        if (answers.manager_name === employeeContent[m].employee_name){
+                        if (answers.employeeManager === employeeContent[m].employee_name){
                             managerID = employeeContent[m].id;
                         }
                     }
@@ -286,12 +286,127 @@ function askAddEmployee(){
                     manager_id: managerID
                 }, function (error, result){
                     if (error) throw (error);
-                    console.log(`${result.affectedRows} employee added.`)
+                    console.log(`${result.affectedRows} employee added.`);
 
                     //return to main menu
                     askMainMenu();
                 });
-            })
+            });
+        });
+    });
+}
+
+function askUpdateEmployee(){
+    // get employees
+    connection.query(sql.getEmployees, function(error, result){
+        if (error) throw error;
+        let employeeContent = result;
+
+        // question to get specific employee
+        let updateEmployeeSelectorQn = {
+            name: "employeeChoice",
+            type: "list",
+            message: "Choose an employee record to update:",
+            choices: function(){
+                let employeeNames = [];
+                for (let e = 0; e < employeeContent.length; e++){
+                    employeeNames.push(`NAME:${employeeContent[e].employee_name}, ROLE:${employeeContent[e].role},  MANAGER:${employeeContent[e].manager_name}`);
+                }
+                return employeeNames;
+            }
+        }
+
+        // ask prompt to select employee
+        inquirer.prompt(updateEmployeeSelectorQn).then((answer) => {
+            let chosenEmployeeID;
+            for (let e = 0; e < employeeContent.length; e++){
+                if (answer.employeeChoice.includes(employeeContent[e].employee_name)){
+                    chosenEmployeeID = employeeContent[e].id;
+                }
+            }
+            // get existing roles
+            connection.query(sql.getRoles, function(error, result){
+            if (error) throw error;
+            let roleContent = result; // store role table
+
+                // ask for new details
+                let updateEmployeeDetailsQns = [
+                    {
+                        name: "employeeNewFirst",
+                     type: "input",
+                        message: "Enter the first name of the employee:"
+                    },
+                    {
+                        name: "employeeNewLast",
+                        type: "input",
+                        message: "Enter the last name of the employee:"
+                    },
+                    {
+                        name: "employeeNewRole",
+                        type: "list",
+                        message: "Choose the employee's role:",
+                        choices: function(){
+                            let roleTitles = [];
+                            for (let r = 0; r < roleContent.length; r++){
+                                roleTitles.push(roleContent[r].title);
+                            }
+                            return roleTitles;
+                        }
+                    },
+                    {
+                        name: "employeeNewManager",
+                        type: "list",
+                        message: "If the employee has a manager, choose that person, otherwise select \"N\/A\":",
+                        choices: function(){
+                            let managerNames = ["N/A"];
+                            for (let m = 0; m < employeeContent.length; m++){
+                                managerNames.push(employeeContent[m].employee_name);
+                            }
+                            return managerNames;
+                        }
+                    }
+                ];
+
+                // run prompt
+                inquirer.prompt(updateEmployeeDetailsQns).then((answers) => {
+                    // match chosen role title with role_id
+                    let roleID;
+                    for (let r = 0; r < roleContent.length; r++){
+                        if(answers.employeeNewRole === roleContent[r].title){
+                            roleID = roleContent[r].id;
+                        }
+                    }
+
+                    // extract manager name and convert to manager_id (if was selected)
+                    let managerID = null;
+                    if (answers.employeeNewManager != "N/A"){
+                        for (let m = 0; m < employeeContent.length; m++){
+                            if (answers.employeeNewManager === employeeContent[m].employee_name){
+                                managerID = employeeContent[m].id;
+                            }
+                        }
+                    }
+
+                    // update employee entry in employee table
+                    connection.query(sql.updateEmployee, [
+                        {
+                            first_name: answers.employeeNewFirst,
+                            last_name: answers.employeeNewLast,
+                            role_id: roleID,
+                            manager_id: managerID
+                        },
+                        {
+                            id: chosenEmployeeID
+                        }
+                    ], function (error, result){
+                        if (error) throw (error);
+                        console.log(`${result.affectedRows} employee updated.`);
+
+                        //return to main menu
+                        askMainMenu();
+                    });
+                });
+            });
         });
     });
 }
@@ -302,7 +417,7 @@ function viewDepartmentTable(){
         if (error) throw error;
         else {
             // display results
-            console.log("Displaying Departments:")
+            console.log("Displaying Departments:");
             console.table(result);
         }
         // return to main menu
@@ -316,7 +431,7 @@ function viewRoleTable(){
         if (error) throw error;
         else {
             // display results
-            console.log("Displaying Roles:")
+            console.log("Displaying Roles:");
             console.table(result);
         }
         // return to main menu
@@ -330,7 +445,7 @@ function viewEmployeeTable(){
             if (error) throw error;
             else {
                 // display results
-                console.log("Displaying Employees:")
+                console.log("Displaying Employees:");
                 console.table(result);
             }
             // return to main menu
@@ -343,7 +458,7 @@ function runProgram(){
 
     console.log(`------------------------------------------------------
 | Welcome to the Employee Database Management System. |
-------------------------------------------------------`)
+------------------------------------------------------`);
     askMainMenu();
 }
 

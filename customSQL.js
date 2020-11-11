@@ -27,6 +27,10 @@ class customSQL {
         // employee
         this.addEmployee = `INSERT INTO employee SET ?`;
         
+        // update existing rows in tables
+        // employee
+        this.updateEmployee = `UPDATE employee SET ? WHERE ?`;
+        
         // retrieve content from tables
         // department
         this.getDepartments = `SELECT * FROM department`;
