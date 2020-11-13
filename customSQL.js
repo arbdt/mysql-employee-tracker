@@ -35,7 +35,7 @@ class customSQL {
         // department
         this.getDepartments = `SELECT * FROM department`;
         // role
-        this.getRoles = `SELECT role.id, role.title, department.name AS department
+        this.getRoles = `SELECT role.id, role.title, role.salary, department.name AS department
          FROM role JOIN department ON role.department_id = department.id`;
         // employee
         this.getEmployees = `SELECT employee.id, CONCAT(employee.first_name, " ", employee.last_name) as employee_name, role.title as role,
