@@ -366,6 +366,9 @@ function askUpdateEmployee(){
                         }
                     }
                 ];
+                // assert employee being edited
+                console.log("Editing this record:");
+                console.log(answer.employeeChoice);
 
                 // run prompt
                 inquirer.prompt(updateEmployeeDetailsQns).then((answers) => {
