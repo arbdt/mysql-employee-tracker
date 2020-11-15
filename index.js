@@ -9,7 +9,7 @@ let connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
     user: "root",
-    password: "rocket"
+    password: ""
 });
 connection.query("CREATE DATABASE IF NOT EXISTS employeeDB", function (error, result) {
     if (error) throw error;
