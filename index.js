@@ -44,7 +44,7 @@ let mainMenuQn = {
     name: "mainMenuChoice",
     type: "list",
     message: "What would you like to do?",
-    choices: ["View entries", "Add an entry", "Update an entry", "Quit"]
+    choices: ["View entries", "Add an entry", "Update an employee", "Quit"]
 };
 
 // add entry submenu
@@ -64,6 +64,15 @@ let viewMenuQn = {
 };
 
 // inquirer prompts ----------
+// validation function
+function validateAnswers(answer){
+    if (answer === "" || answer === " "){
+        return "Please do not leave this field blank.";
+    } else {
+        return true;
+    }
+}
+
 // main menu
 function askMainMenu(){
     inquirer.prompt(mainMenuQn).then((answer) => {
@@ -76,7 +85,7 @@ function askMainMenu(){
             askAddMenu();
         }
         // if choose "update"
-        else if (answer.mainMenuChoice === "Update an entry"){
+        else if (answer.mainMenuChoice === "Update an employee"){
             askUpdateEmployee();
         }
         // if choose "quit"
@@ -130,7 +139,8 @@ function askAddDepartment(){
     let addDeptQn = {
         name: "departmentToAdd",
         type: "input",
-        message: "Enter the name of the department to be added:"
+        message: "Enter the name of the department to be added:",
+        validate: validateAnswers
     }
 
     // ask add department prompt
@@ -160,12 +170,14 @@ function askAddRole(){
             {
                 name: "roleTitle",
                 type: "input",
-                message: "Enter the title of the role to be added:"
+                message: "Enter the title of the role to be added:",
+                validate: validateAnswers
             },
             {
                 name: "roleSalary",
                 type: "input",
-                message: "Enter the salary for this role in decimal format (0.00):"
+                message: "Enter the salary for this role in decimal format (0.00):",
+                validate: validateAnswers
             },
             {
                 name: "roleDepartment",
@@ -225,12 +237,14 @@ function askAddEmployee(){
                 {
                     name: "employeeFirst",
                     type: "input",
-                    message: "Enter the first name of the employee:"
+                    message: "Enter the first name of the employee:",
+                    validate: validateAnswers
                 },
                 {
                     name: "employeeLast",
                     type: "input",
-                    message: "Enter the last name of the employee:"
+                    message: "Enter the last name of the employee:",
+                    validate: validateAnswers
                 },
                 {
                     name: "employeeRole",
@@ -334,12 +348,14 @@ function askUpdateEmployee(){
                     {
                         name: "employeeNewFirst",
                      type: "input",
-                        message: "Enter the first name of the employee:"
+                        message: "Enter the first name of the employee:",
+                        validate: validateAnswers
                     },
                     {
                         name: "employeeNewLast",
                         type: "input",
-                        message: "Enter the last name of the employee:"
+                        message: "Enter the last name of the employee:",
+                        validate: validateAnswers
                     },
                     {
                         name: "employeeNewRole",
